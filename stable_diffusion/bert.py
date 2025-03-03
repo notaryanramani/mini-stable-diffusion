@@ -12,6 +12,7 @@ class BERT(nn.Module):
 
     def forward(self, texts) -> torch.Tensor:
         tokens = self.tokenize(texts)
+        tokens = {k: v.to(self.m.device) for k, v in tokens.items()}
         with torch.no_grad():
             out = self.m(**tokens)
             return out.last_hidden_state

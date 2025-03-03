@@ -19,7 +19,7 @@ class Scheduler:
         self.beta = torch.linspace(beta_start, beta_end, noise_steps).to(device=config.DEVICE) ** 2
         self.alpha = 1. - self.beta
         self.alpha_hat = torch.cumprod(self.alpha, dim=0)
-        self.timesteps = torch.arange(0, noise_steps)[::-1].clone().to(device=config.DEVICE)
+        self.timesteps = torch.flip(torch.arange(0, noise_steps), [0]).clone().to(device=config.DEVICE)
         self.n_inference_steps = 1
 
     def noise_images(self, x:torch.Tensor, t:torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:

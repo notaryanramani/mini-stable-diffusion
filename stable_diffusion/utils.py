@@ -11,7 +11,7 @@ class Config:
     TIME_POS_DIM:int = 320          # postional time embedding dimension
     PROMPT_DIM:int = 768            # prompt embeddings dimension (i.e. BERT embedding dimensions)
     IMG_SIZE:tuple = (256, 256)
-    BATCH_SIZE:int = 32
+    BATCH_SIZE:int = 2
     DROPOUT:float = 0.2
     LATENT_H:int = 32               # latent height
     LATENT_W:int = 32               # latent weight
@@ -32,7 +32,7 @@ class TimePositionEmbedding(nn.Module):
         
 
     def forward(self, t:torch.Tensor) -> torch.Tensor:
-        out = self.pe[t].view(-1, 320)
+        out = self.pe.to(t.device)[t].view(-1, 320)
         return out
     
 

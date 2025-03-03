@@ -77,20 +77,20 @@ class DiffusionModel(nn.Module):
             for _ in enumerate(pb):
                 images, prompts = data_loader.get_batch()
                 if torch.rand(1).item() < 0.1:
-                    prompts = [''] * config.BATCH_SIZE  # 10% chance of training without labels
+                    prompts = [''] * batch_size  # 10% chance of training without labels
                 images = images.to(config.DEVICE)
                 prompts_emb = self.bert(prompts).to(device=config.DEVICE)
                 # clip prompts
                 # prompts_emb = self.clip(prompts).to(device=config.DEVICE)
-                t = self.scheduler.sample_timesteps(batch_size).to(self.device)
+                t = self.scheduler.sample_timesteps(batch_size).to(config.DEVICE)
                 x_t, noise = self.scheduler.noise_images(images, t)
-                latent_noise = torch.randn(config.BATCH_SIZE, 4, config.LATENT_H, config.LATENT_H).to(device=config.DEVICE)
+                latent_noise = torch.randn(batch_size, 4, config.LATENT_H, config.LATENT_H).to(device=config.DEVICE)
                 if autocast:
                     with torch.autocast(dtype=torch.bfloat16, device_type=config.DEVICE):
-                        predicted_noise = self.m(x_t, latent_noise, prompts_emb, t)
+                        predicted_noise = self(x_t, latent_noise, prompts_emb, t)
                         loss = mse(noise, predicted_noise)
                 else:
-                    predicted_noise = self.m(x_t, latent_noise, prompts_emb, t)
+                    predicted_noise = self(x_t, latent_noise, prompts_emb, t)
                     loss = mse(noise, predicted_noise)
                 opt.zero_grad()
                 loss.backward()

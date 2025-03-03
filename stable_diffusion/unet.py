@@ -217,21 +217,22 @@ class UNetDecoder(nn.Module):
 
 class UNet(nn.Module):
     def __init__(self, channels:int=config.UNET_INIT_CHANNELS) ->  None:
+        super().__init__()
         # (B, 4, H/8, W/8) -> (B, channels * 8, H/64, H/64)
         self.encoders = UNetEncoder(channels)
 
         # (B, channels * 8, H/64, W/64) -> (B, channels * 16, H/128, W/128)
         self.bottleneck_in = nn.Sequential(
             nn.MaxPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(channels * 8, channels * 16, kernel_size=3, padding=1)
+            nn.Conv2d(channels * 4, channels * 8, kernel_size=3, padding=1)
         )
 
-        self.res = UNetResidual(channels * 16)
-        self.att = UNetAttention(8, channels * 16 // 8)
+        self.res = UNetResidual(channels * 8)
+        self.att = UNetAttention(4, channels * 8 // 4)
 
         #  (B, channels * 16, H/128, W/128) -> (B, channels * 8, H/64, W/64)
         self.bottleneck_out = nn.Sequential(
-            nn.Conv2d(channels * 16, channels * 8, kernel_size=3, padding=1),
+            nn.Conv2d(channels * 8, channels * 4, kernel_size=3, padding=1),
             nn.Upsample(scale_factor=2),
         )
 
@@ -242,8 +243,8 @@ class UNet(nn.Module):
         x, skips = self.encoders(x, prompt, time)
 
         x = self.bottleneck_in(x)
-        x = self.res(x)
-        x = self.att(x)
+        x = self.res(x, time)
+        x = self.att(x, prompt)
         x = self.bottleneck_out(x)
 
         x = self.decoders(x, skips, prompt, time)
