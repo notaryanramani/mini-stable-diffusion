@@ -61,7 +61,7 @@ class DiffusionModel(nn.Module):
               lr:float= 3e-4, 
               batch_size:int=32, 
               eta_min = 3e-6,
-              warmup_epcohs = 50, # try to keep this 25% of epochs
+              warmup_epochs = 50, # try to keep this 25% of epochs
               return_state_dict=False,
               autocast = False) -> Union[dict, None]:
 
@@ -70,7 +70,7 @@ class DiffusionModel(nn.Module):
         mse = nn.MSELoss()
 
         for epoch in range(epochs):
-            if epoch > warmup_epcohs:
+            if epoch > warmup_epochs:
                 opt_sch.step()
             pb = tqdm(range(len(data_loader)))
             pb.set_description(f'Train Epoch [{epoch+1}/{epochs}]: ')
